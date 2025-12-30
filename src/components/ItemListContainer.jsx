@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../services/firebase";
 
 const products = [
   { id: "1", name: "Auriculares", category: "electronica", price: 100 },
@@ -21,47 +22,32 @@ const products = [
   { id: "16", name: "Pulsera", category: "accesorios", price: 35 },
 ];
 
-function ItemListContainer({ greeting }) {
+function ItemListContainer() {
+  const [products, setProducts] = useState([]);
   const { categoryId } = useParams();
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    new Promise((resolve) => {
-      setTimeout(() => {
-        if (categoryId) {
-          resolve(
-            products.filter(
-              (p) => p.category.toLowerCase() === categoryId.toLowerCase()
-            )
-          );
-        } else {
-          resolve(products);
-        }
-      }, 500);
-    }).then((data) => {
-      setItems(data);
-      setLoading(false);
+    const ref = categoryId
+      ? query(collection(db, "products"), where("categorias", "==", categoryId))
+      : collection(db, "products");
+
+    getDocs(ref).then(res => {
+      setProducts(
+        res.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      );
     });
   }, [categoryId]);
 
-  if (loading) return <p>Cargando productos...</p>;
-
   return (
     <div>
-      <h2>{greeting}</h2>
-      {categoryId && <h3>Categoría: {categoryId}</h3>}
-      <ul>
-        {items.map((product) => (
-          <li key={product.id} style={{ marginBottom: "15px" }}>
-            <Link to={`/product/${product.id}`}>
-              <strong>{product.name}</strong>
-            </Link>
-            <p>Precio: ${product.price}</p>
-          </li>
-        ))}
-      </ul>
+      <h2>Productos</h2>
+      {products.map(p => (
+        <div key={p.id}>
+          <h3>{p.titulo}</h3>
+          <p>${p.precio}</p>
+          <Link to={`/item/${p.id}`}>Ver detalle</Link>
+        </div>
+      ))}
     </div>
   );
 }

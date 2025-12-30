@@ -3,23 +3,27 @@ import NavBar from "./components/NavBar";
 import ItemListContainer from "./components/ItemListContainer";
 import ItemDetailContainer from "./components/ItemDetailContainer";
 import NotFound from "./components/NotFound";
+import Cart from "./components/Cart";
+import CheckoutForm from "./components/CheckoutForm";
+
+
 
 function App() {
   return (
     <BrowserRouter>
       <NavBar />
       <Routes>
-        {/* Ruta principal: todos los productos */}
         <Route path="/" element={<ItemListContainer greeting="¡Bienvenido a mi tienda!" />} />
 
-        {/* Ruta por categoría */}
         <Route path="/category/:categoryId" element={<ItemListContainer greeting="¡Bienvenido a mi tienda!" />} />
 
-        {/* Ruta de detalle de producto */}
         <Route path="/product/:productId" element={<ItemDetailContainer />} />
 
-        {/* Ruta 404 */}
         <Route path="*" element={<NotFound />} />
+
+        <Route path="/checkout" element={<CheckoutForm />} />
+
+        <Route path="/cart" element={<Cart />} />
       </Routes>
     </BrowserRouter>
   );

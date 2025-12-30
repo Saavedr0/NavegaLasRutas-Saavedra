@@ -1,34 +1,41 @@
-import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import ItemCount from "./ItemCount"; 
-
-
-const products = [
-  { id: "1", name: "Producto 1", description: "Descripción del producto 1" },
-  { id: "2", name: "Producto 2", description: "Descripción del producto 2" },
-];
+import { useParams } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../services/firebase";
+import ItemCount from "./ItemCount";
 
 function ItemDetailContainer() {
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
+    const productRef = doc(db, "products", productId);
 
-    new Promise((resolve) => {
-      setTimeout(() => {
-        const prod = products.find(p => p.id === productId);
-        resolve(prod);
-      }, 500);
-    }).then((data) => setProduct(data));
+    getDoc(productRef).then((resp) => {
+      if (resp.exists()) {
+        setProduct({ id: resp.id, ...resp.data() });
+      }
+    });
   }, [productId]);
+
+  const handleAdd = (quantity) => {
+    console.log("Cantidad agregada:", quantity);
+    setAdded(true);
+  };
 
   if (!product) return <p>Cargando producto...</p>;
 
   return (
     <div>
-      <h2>{product.name}</h2>
+      <h2>{product.title}</h2>
       <p>{product.description}</p>
-      <ItemCount />
+
+      {!added ? (
+        <ItemCount stock={product.stock} onAdd={handleAdd} />
+      ) : (
+        <p>Producto agregado al carrito</p>
+      )}
     </div>
   );
 }
